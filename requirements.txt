@@ -5,4 +5,5 @@ Pillow
 stone
 flask
 matplotlib
-gunicorn 
+gunicorn==20.1.0
+Werkzeug==2.0.3 
