@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import cv2
 import numpy as np
+import os
 from Python.skin_tone import detect_skin_tone, recommend_colors, create_color_preview
 
 app = Flask(__name__)
@@ -35,4 +36,5 @@ def analyze():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port) 
