@@ -2,13 +2,12 @@ import cv2
 import numpy as np
 import stone  # Assuming you have installed the skin-tone-classifier library
 import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
 
 def capture_image():
-    # Capture image from webcam
-    cap = cv2.VideoCapture(0)
-    ret, frame = cap.read()
-    cap.release()
-    return frame
+    # This function will be replaced by file upload in web interface
+    pass
 
 def detect_skin_tone(image):
     # Process the image to detect skin tone
@@ -24,18 +23,17 @@ def recommend_colors(skin_tone):
     }
     return recommendations.get(skin_tone, [])
 
-def display_recommendations(colors):
-    # Display recommended colors
+def create_color_preview(colors):
+    # Create color preview image for web display
     plt.figure(figsize=(8, 4))
     for color in colors:
         plt.fill_between([0, 1], 0, 1, color=color)
     plt.title('Recommended Colors')
     plt.axis('off')
-    plt.show()
-
-# Main function
-if __name__ == "__main__":
-    image = capture_image()
-    skin_tone, tone_label = detect_skin_tone(image)
-    recommended_colors = recommend_colors(tone_label)
-    display_recommendations(recommended_colors)
+    
+    # Save plot to bytes buffer
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close()
+    buf.seek(0)
+    return base64.b64encode(buf.getvalue()).decode('utf-8')

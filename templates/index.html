@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Tone Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .upload-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+        #preview {
+            max-width: 100%;
+            margin: 20px 0;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .color-preview {
+            max-width: 100%;
+            margin: 20px 0;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Skin Tone Analyzer</h1>
+        
+        <div class="upload-section">
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="analyzeImage()">Analyze</button>
+        </div>
+
+        <img id="preview" style="display: none;">
+        
+        <div class="loading" id="loading">
+            Analyzing image...
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function analyzeImage() {
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    document.getElementById('results').innerHTML = `<p>Error: ${data.error}</p>`;
+                    return;
+                }
+
+                const results = document.getElementById('results');
+                results.innerHTML = `
+                    <h2>Results</h2>
+                    <p>Skin Tone: ${data.skin_tone}</p>
+                    <p>Tone Label: ${data.tone_label}</p>
+                    <h3>Recommended Colors:</h3>
+                    <img src="data:image/png;base64,${data.color_preview}" class="color-preview">
+                `;
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').innerHTML = `<p>Error: ${error.message}</p>`;
+            });
+        }
+
+        // Preview uploaded image
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const preview = document.getElementById('preview');
+            const file = e.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html> 

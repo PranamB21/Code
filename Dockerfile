@@ -7,6 +7,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-EXPOSE 8501
+EXPOSE 5000
 
-ENTRYPOINT ["streamlit", "run", "Project/env_name/skindetection.py", "--server.port=8501", "--server.address=0.0.0.0"] 
+CMD ["python", "app.py"] 
