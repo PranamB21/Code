@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import stone  # Assuming you have installed the skin-tone-classifier library
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
@@ -10,14 +9,19 @@ def capture_image():
     pass
 
 def detect_skin_tone(image):
-    # Example: Replace with the correct function or logic
-    # Assuming stone has a method like `process` for demonstration
-    result = stone.process(image, image_type='color', palette=['#C99676', '#805341', '#9D7A54'])
+    # Convert to HSV color space
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     
-    if result and 'faces' in result and len(result['faces']) > 0:
-        return result['faces'][0]['skin_tone'], result['faces'][0]['tone_label']
-    else:
-        return None, None  # Handle cases where no face is detected
+    # Calculate average HSV values in the image
+    average_color = np.mean(hsv_image, axis=(0, 1))
+    
+    # Define skin tone ranges (these are approximate values)
+    if average_color[1] < 50:  # Low saturation indicates fair skin
+        return "Light", "CF"
+    elif average_color[1] < 100:  # Medium saturation indicates medium skin
+        return "Medium", "CM"
+    else:  # High saturation indicates darker skin
+        return "Dark", "CD"
 
 def recommend_colors(skin_tone):
     # Define color recommendations based on skin tone
@@ -31,14 +35,15 @@ def recommend_colors(skin_tone):
 def create_color_preview(colors):
     # Create color preview image for web display
     plt.figure(figsize=(8, 4))
-    for color in colors:
-        plt.fill_between([0, 1], 0, 1, color=color)
+    for i, color in enumerate(colors):
+        plt.fill_between([i, i+1], 0, 1, color=color)
+    plt.xlim(0, len(colors))
     plt.title('Recommended Colors')
     plt.axis('off')
     
     # Save plot to bytes buffer
     buf = BytesIO()
-    plt.savefig(buf, format='png')
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
     plt.close()
     buf.seek(0)
     return base64.b64encode(buf.getvalue()).decode('utf-8')

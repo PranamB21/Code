@@ -1,8 +1,6 @@
-streamlit
 opencv-python-headless
 numpy
 Pillow
-stone
 flask
 matplotlib
 gunicorn==20.1.0
