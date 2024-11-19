@@ -47,5 +47,3 @@ def create_color_preview(colors):
     plt.close()
     buf.seek(0)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
-
-print(dir(stone))
