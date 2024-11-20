@@ -47,3 +47,15 @@ def create_color_preview(colors):
     plt.close()
     buf.seek(0)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
+
+def generate_colors(base_color, num_colors=5):
+    # Convert hex to RGB
+    base_rgb = [int(base_color[i:i+2], 16) for i in (1, 3, 5)]
+    colors = []
+    
+    for i in range(num_colors):
+        # Generate a new color by slightly modifying the base color
+        new_color = [(base_rgb[j] + (i * 20)) % 256 for j in range(3)]
+        colors.append('#{:02x}{:02x}{:02x}'.format(*new_color))
+    
+    return colors
