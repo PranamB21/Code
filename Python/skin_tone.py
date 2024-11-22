@@ -26,9 +26,18 @@ def detect_skin_tone(image):
 def recommend_colors(skin_tone):
     # Define color recommendations based on skin tone
     recommendations = {
-        'CF': ['#C99676', '#E5C8A6', '#F3D1C6', '#F5B7B1', '#FAD7A1', '#F9E79F'],  # Fair skin
-        'CM': ['#805341', '#9D7A54', '#BEA07E', '#D5BDAF', '#C39BD3', '#A3E4D7'],  # Medium skin
-        'CD': ['#6F503C', '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F'],  # Dark skin
+        'CF': [
+            '#C99676', '#E5C8A6', '#F3D1C6', '#F5B7B1', '#FAD7A1', '#F9E79F',
+            '#F8C471', '#F5B041', '#F39C12', '#D68910', '#B9770E', '#9C640C'
+        ],  # Fair skin
+        'CM': [
+            '#805341', '#9D7A54', '#BEA07E', '#D5BDAF', '#C39BD3', '#A3E4D7',
+            '#76D7C4', '#48C9B0', '#1ABC9C', '#17A589', '#148F77', '#117A65'
+        ],  # Medium skin
+        'CD': [
+            '#6F503C', '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F',
+            '#F4D03F', '#F1C40F', '#D4AC0D', '#B7950B', '#9A7D0A', '#7D6608'
+        ],  # Dark skin
     }
     return recommendations.get(skin_tone, [])
 
