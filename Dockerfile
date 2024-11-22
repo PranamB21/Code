@@ -2,19 +2,28 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install system dependencies for OpenCV
-RUN apt-get update && apt-get install -y \
+# Clean and update apt
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get update
+
+# Install system dependencies
+RUN apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    python3-dev \
+    build-essential
 
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip wheel setuptools && \
+    pip install -r requirements.txt
 
+# Copy application code
 COPY . .
 
-# Make port configurable via environment variable
+# Set environment variables
 ENV PORT=8080
 
-# Use gunicorn as the production server
-CMD gunicorn --bind 0.0.0.0:$PORT app:app 
+# Start the application
+CMD gunicorn --bind 0.0.0.0:$PORT app:app
