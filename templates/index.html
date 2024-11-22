@@ -76,9 +76,10 @@
         <h1>Skin Tone Analyzer</h1>
         
         <div class="upload-section">
-            <label for="imageInput">Upload Image</label>
-            <input type="file" id="imageInput" accept="image/*">
-            <button onclick="analyzeImage()" style="margin-left: 10px; padding: 10px 20px; border: none; border-radius: 5px; background-color: #28a745; color: white; cursor: pointer; transition: background-color 0.3s;">Analyze</button>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="imageInput" name="image" accept="image/*" required>
+                <button type="submit">Analyze Image</button>
+            </form>
         </div>
 
         <img id="preview" style="display: none;">
@@ -87,7 +88,9 @@
             Analyzing image...
         </div>
 
-        <div id="results"></div>
+        <div id="results" style="display: none;">
+            <!-- Results will be displayed here -->
+        </div>
     </div>
 
     <footer>
@@ -95,37 +98,47 @@
     </footer>
 
     <script>
-        function analyzeImage() {
-            const input = document.getElementById('imageInput');
-            const file = input.files[0];
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            
             if (!file) {
-                alert('Please select an image first');
+                alert('Please select an image file');
                 return;
             }
-
-            // Show loading
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').innerHTML = '';
-
-            const formData = new FormData();
+            
             formData.append('image', file);
-
-            fetch('/analyze', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loading').style.display = 'none';
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
                 
-                if (data.error) {
-                    document.getElementById('results').innerHTML = `<p>Error: ${data.error}</p>`;
-                    return;
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Handle successful response
+                    const results = document.getElementById('results');
+                    results.style.display = 'block';
+                    results.innerHTML = `
+                        <h3>Results:</h3>
+                        <p>Skin Tone: ${data.tone_label}</p>
+                        <p>Recommended Colors: ${data.recommended_colors.join(', ')}</p>
+                        <img src="data:image/png;base64,${data.color_preview}" alt="Color Preview">
+                    `;
+                } else {
+                    // Handle error response
+                    alert(data.error || 'An error occurred while processing the image');
                 }
-
-                const results = document.getElementById('results');
-                results.innerHTML = `
-                    <h2>Results</h2>
-                    <p>Skin Tone: <strong>${data.skin_tone}</strong></p>
-                    <p>Tone Label: <strong>${data.tone_label}</strong></p>
-                    <h3>Recommended
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while uploading the image');
+            }
+        });
+    </script>
+</body>
+</html>
