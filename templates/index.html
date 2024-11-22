@@ -30,16 +30,25 @@
         input[type="file"] {
             display: none;
         }
-        label {
+        .upload-button, .analyze-button {
             background-color: #007BFF;
             color: white;
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin: 10px;
+            border: none;
+            font-size: 16px;
         }
-        label:hover {
+        .upload-button:hover, .analyze-button:hover {
             background-color: #0056b3;
+        }
+        .analyze-button {
+            background-color: #28a745;
+        }
+        .analyze-button:hover {
+            background-color: #218838;
         }
         #preview {
             max-width: 100%;
@@ -77,8 +86,9 @@
         
         <div class="upload-section">
             <form id="uploadForm" enctype="multipart/form-data">
+                <label for="imageInput" class="upload-button">Choose Image</label>
                 <input type="file" id="imageInput" name="image" accept="image/*" required>
-                <button type="submit">Analyze Image</button>
+                <button type="submit" class="analyze-button">Analyze Image</button>
             </form>
         </div>
 
