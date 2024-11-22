@@ -7,7 +7,8 @@ services:
       sudo apt-get clean
       sudo apt-get update
       sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 python3-dev build-essential
-      pip install --upgrade pip wheel setuptools
+      python -m pip install --upgrade pip==24.0
+      pip install --upgrade wheel setuptools
       pip uninstall -y flask werkzeug
       pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 4
