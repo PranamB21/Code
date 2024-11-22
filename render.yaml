@@ -3,12 +3,19 @@ services:
     name: skin-tone-analyzer
     env: python
     buildCommand: |
-      apt-get update && apt-get install -y libgl1-mesa-glx libglib2.0-0 python3-dev build-essential
+      sudo rm -rf /var/lib/apt/lists/*
+      sudo apt-get clean
+      sudo apt-get update
+      sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 python3-dev build-essential
       pip install --upgrade pip wheel setuptools
       pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.18
+      - key: DEBIAN_FRONTEND
+        value: noninteractive
+      - key: APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE
+        value: "1"
     healthCheckPath: /
     plan: free
