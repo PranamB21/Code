@@ -15,28 +15,40 @@ def detect_skin_tone(image):
     # Calculate average HSV values in the image
     average_color = np.mean(hsv_image, axis=(0, 1))
     
-    # Define skin tone ranges (these are approximate values)
-    if average_color[1] < 50:  # Low saturation indicates fair skin
-        return "Light", "CF"
-    elif average_color[1] < 100:  # Medium saturation indicates medium skin
-        return "Medium", "CM"
-    else:  # High saturation indicates darker skin
-        return "Dark", "CD"
+    # Define more detailed skin tone ranges
+    if average_color[1] < 30 and average_color[2] > 200:  # Very fair skin
+        return "Very Light", "VLF"
+    elif average_color[1] < 50:  # Fair skin
+        return "Light", "LF"
+    elif average_color[1] < 70:  # Light medium skin
+        return "Light Medium", "LM"
+    elif average_color[1] < 100:  # Medium skin
+        return "Medium", "MF"
+    elif average_color[1] < 130:  # Medium dark skin
+        return "Medium Dark", "MD"
+    else:  # Dark skin
+        return "Dark", "DF"
 
 def recommend_colors(skin_tone):
     # Define color recommendations based on skin tone
     recommendations = {
-        'CF': [
-            '#C99676', '#E5C8A6', '#F3D1C6', '#F5B7B1', '#FAD7A1', '#F9E79F',
-            '#F8C471', '#F5B041', '#F39C12', '#D68910', '#B9770E', '#9C640C'
+        'VLF': [
+            '#F5E6E8', '#FADBD8', '#F5B7B1', '#F1948A', '#EC7063', '#E74C3C'
+        ],  # Very fair skin
+        'LF': [
+            '#C99676', '#E5C8A6', '#F3D1C6', '#F5B7B1', '#FAD7A1', '#F9E79F'
         ],  # Fair skin
-        'CM': [
-            '#805341', '#9D7A54', '#BEA07E', '#D5BDAF', '#C39BD3', '#A3E4D7',
-            '#76D7C4', '#48C9B0', '#1ABC9C', '#17A589', '#148F77', '#117A65'
+        'LM': [
+            '#D5BDAF', '#C39BD3', '#A3E4D7', '#76D7C4', '#48C9B0', '#1ABC9C'
+        ],  # Light medium skin
+        'MF': [
+            '#805341', '#9D7A54', '#BEA07E', '#D5BDAF', '#C39BD3', '#A3E4D7'
         ],  # Medium skin
-        'CD': [
-            '#6F503C', '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F',
-            '#F4D03F', '#F1C40F', '#D4AC0D', '#B7950B', '#9A7D0A', '#7D6608'
+        'MD': [
+            '#6F503C', '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F'
+        ],  # Medium dark skin
+        'DF': [
+            '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F', '#F4D03F'
         ],  # Dark skin
     }
     return recommendations.get(skin_tone, [])
@@ -63,8 +75,10 @@ def generate_colors(base_color, num_colors=5):
     colors = []
     
     for i in range(num_colors):
-        # Generate a new color by slightly modifying the base color
-        new_color = [(base_rgb[j] + (i * 20)) % 256 for j in range(3)]
+        # Generate a new color by modifying the base color with a more varied approach
+        new_color = [
+            (base_rgb[j] + (i * 30) + (i * 10) % 256) % 256 for j in range(3)
+        ]
         colors.append('#{:02x}{:02x}{:02x}'.format(*new_color))
     
     return colors
