@@ -9,8 +9,26 @@ def capture_image():
     pass
 
 def detect_skin_tone(image):
-    # Convert to HSV color space
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # Input validation
+    if image is None:
+        raise ValueError("No image provided")
+    
+    if not isinstance(image, np.ndarray):
+        raise TypeError("Input must be a numpy array (cv2 image)")
+        
+    # Check if image is empty
+    if image.size == 0:
+        raise ValueError("Empty image provided")
+        
+    # Check if image has valid dimensions
+    if len(image.shape) != 3:
+        raise ValueError("Image must be a color image with 3 channels")
+    
+    try:
+        # Convert to HSV color space
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    except cv2.error:
+        raise ValueError("Failed to convert image to HSV color space. Please ensure the image is in BGR format")
     
     # Calculate average HSV values in the image
     average_color = np.mean(hsv_image, axis=(0, 1))
@@ -82,3 +100,32 @@ def generate_colors(base_color, num_colors=5):
         colors.append('#{:02x}{:02x}{:02x}'.format(*new_color))
     
     return colors
+
+def process_image(image_data):
+    """
+    Process the input image data and convert it to cv2 format
+    
+    Args:
+        image_data: Can be a file path, bytes, or numpy array
+        
+    Returns:
+        cv2 image (numpy array)
+    """
+    try:
+        if isinstance(image_data, str):  # File path
+            image = cv2.imread(image_data)
+        elif isinstance(image_data, bytes):  # Bytes data
+            nparr = np.frombuffer(image_data, np.uint8)
+            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        elif isinstance(image_data, np.ndarray):  # Already a cv2 image
+            image = image_data
+        else:
+            raise ValueError("Unsupported image format")
+            
+        if image is None:
+            raise ValueError("Failed to load image")
+            
+        return image
+        
+    except Exception as e:
+        raise ValueError(f"Error processing image: {str(e)}")
