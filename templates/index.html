@@ -114,11 +114,17 @@
             const formData = new FormData();
             const fileInput = document.getElementById('imageInput');
             const file = fileInput.files[0];
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
             
             if (!file) {
                 alert('Please select an image file');
                 return;
             }
+            
+            // Show loading state
+            loading.style.display = 'block';
+            results.style.display = 'none';
             
             formData.append('image', file);
             
@@ -130,23 +136,31 @@
                 
                 const data = await response.json();
                 
+                // Hide loading state
+                loading.style.display = 'none';
+                
                 if (response.ok) {
                     // Handle successful response
-                    const results = document.getElementById('results');
                     results.style.display = 'block';
                     results.innerHTML = `
                         <h3>Results:</h3>
-                        <p>Skin Tone: ${data.tone_label}</p>
-                        <p>Recommended Colors: ${data.recommended_colors.join(', ')}</p>
-                        <img src="data:image/png;base64,${data.color_preview}" alt="Color Preview">
+                        <p>Skin Tone: ${data.skin_tone}</p>
+                        <p>Recommended Colors:</p>
+                        <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
+                            ${data.recommended_colors.map(color => 
+                                `<div style="width: 50px; height: 50px; background-color: ${color}; border-radius: 5px;"></div>`
+                            ).join('')}
+                        </div>
+                        <img src="data:image/png;base64,${data.color_preview}" alt="Color Preview" class="color-preview">
                     `;
                 } else {
                     // Handle error response
                     alert(data.error || 'An error occurred while processing the image');
                 }
             } catch (error) {
+                loading.style.display = 'none';
                 console.error('Error:', error);
-                alert('An error occurred while uploading the image');
+                alert('An error occurred while uploading the image. Please try again.');
             }
         });
     </script>

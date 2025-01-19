@@ -7,5 +7,9 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
+      - key: FLASK_ENV
+        value: production
+      - key: MAX_CONTENT_LENGTH
+        value: 16777216  # 16MB max-body-size
     healthCheckPath: /
     plan: free
