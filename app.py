@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import cv2
 import numpy as np
 import os
-from Python.skin_tone import detect_skin_tone, recommend_colors, create_color_preview
+from Python.skin_tone import detect_skin_tone, recommend_colors, create_color_preview, process_image
 
 app = Flask(__name__)
 
