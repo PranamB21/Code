@@ -1,11 +1,11 @@
 from flask import Flask, request, render_template, jsonify
 import os
 from skin_tone import process_image
-import base64
+import numpy as np
 
 app = Flask(__name__)
 
-# Ensure the upload folder exists
+# Configure upload folder
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -28,7 +28,7 @@ def analyze():
         image_data = file.read()
         
         # Process the image
-        image, display_data = process_image(image_data)
+        _, display_data = process_image(image_data)
         
         return jsonify({
             'success': True,
@@ -39,4 +39,6 @@ def analyze():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    # Use PORT environment variable if available
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port) 
