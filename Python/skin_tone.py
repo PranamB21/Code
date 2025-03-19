@@ -8,6 +8,78 @@ def capture_image():
     # This function will be replaced by file upload in web interface
     pass
 
+def display_image(image, title="Input Image"):
+    """
+    Convert an image to base64 string for web display
+    
+    Args:
+        image: numpy array (cv2 image)
+        title: title for the image
+        
+    Returns:
+        base64 encoded string of the image
+    """
+    # Convert BGR to RGB for correct color display
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    # Create figure
+    plt.figure(figsize=(8, 6))
+    plt.imshow(rgb_image)
+    plt.title(title)
+    plt.axis('off')
+    
+    # Save plot to bytes buffer
+    buf = BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
+    plt.close()
+    buf.seek(0)
+    return base64.b64encode(buf.getvalue()).decode('utf-8')
+
+def create_analysis_display(image, skin_tone, colors):
+    """
+    Create a combined display of the input image, skin tone analysis, and color recommendations
+    
+    Args:
+        image: numpy array (cv2 image)
+        skin_tone: tuple of (skin tone name, skin tone code)
+        colors: list of recommended colors
+        
+    Returns:
+        base64 encoded string of the combined display
+    """
+    # Create a figure with subplots
+    fig = plt.figure(figsize=(15, 8))
+    
+    # Plot 1: Original Image
+    plt.subplot(131)
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    plt.imshow(rgb_image)
+    plt.title('Input Image')
+    plt.axis('off')
+    
+    # Plot 2: Skin Tone Analysis
+    plt.subplot(132)
+    plt.text(0.5, 0.5, f'Skin Tone: {skin_tone[0]}\nCode: {skin_tone[1]}', 
+             horizontalalignment='center', verticalalignment='center',
+             fontsize=12)
+    plt.axis('off')
+    
+    # Plot 3: Color Recommendations
+    plt.subplot(133)
+    for i, color in enumerate(colors):
+        plt.fill_between([i, i+1], 0, 1, color=color)
+    plt.xlim(0, len(colors))
+    plt.title('Recommended Colors')
+    plt.axis('off')
+    
+    # Adjust layout and save
+    plt.tight_layout()
+    buf = BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
+    plt.close()
+    buf.seek(0)
+    return base64.b64encode(buf.getvalue()).decode('utf-8')
+
 def detect_skin_tone(image):
     # Input validation
     if image is None:
@@ -27,47 +99,79 @@ def detect_skin_tone(image):
     try:
         # Convert to HSV color space
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        # Convert to RGB color space for additional analysis
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     except cv2.error:
-        raise ValueError("Failed to convert image to HSV color space. Please ensure the image is in BGR format")
+        raise ValueError("Failed to convert image color spaces. Please ensure the image is in BGR format")
     
-    # Calculate average HSV values in the image
-    average_color = np.mean(hsv_image, axis=(0, 1))
+    # Calculate average HSV and RGB values
+    hsv_avg = np.mean(hsv_image, axis=(0, 1))
+    rgb_avg = np.mean(rgb_image, axis=(0, 1))
     
-    # Define more detailed skin tone ranges
-    if average_color[1] < 30 and average_color[2] > 200:  # Very fair skin
+    # Calculate additional metrics
+    saturation = hsv_avg[1]
+    value = hsv_avg[2]
+    red_ratio = rgb_avg[0] / (rgb_avg[0] + rgb_avg[1] + rgb_avg[2])
+    
+    # Enhanced skin tone classification with more categories
+    if saturation < 25 and value > 220:  # Very fair skin
         return "Very Light", "VLF"
-    elif average_color[1] < 50:  # Fair skin
-        return "Light", "LF"
-    elif average_color[1] < 70:  # Light medium skin
+    elif saturation < 35 and value > 200:  # Fair skin
+        return "Fair", "F"
+    elif saturation < 45 and value > 180:  # Light skin
+        return "Light", "L"
+    elif saturation < 55 and value > 160:  # Light Medium skin
         return "Light Medium", "LM"
-    elif average_color[1] < 100:  # Medium skin
-        return "Medium", "MF"
-    elif average_color[1] < 130:  # Medium dark skin
+    elif saturation < 65 and value > 140:  # Medium skin
+        return "Medium", "M"
+    elif saturation < 75 and value > 120:  # Medium Dark skin
         return "Medium Dark", "MD"
-    else:  # Dark skin
-        return "Dark", "DF"
+    elif saturation < 85 and value > 100:  # Dark skin
+        return "Dark", "D"
+    elif saturation < 95 and value > 80:  # Deep skin
+        return "Deep", "DP"
+    else:  # Very Deep skin
+        return "Very Deep", "VD"
 
 def recommend_colors(skin_tone):
-    # Define color recommendations based on skin tone
+    # Enhanced color recommendations based on skin tone
     recommendations = {
         'VLF': [
-            '#F5E6E8', '#FADBD8', '#F5B7B1', '#F1948A', '#EC7063', '#E74C3C'
+            '#F5E6E8', '#FADBD8', '#F5B7B1', '#F1948A', '#EC7063', '#E74C3C',
+            '#F8C471', '#F39C12', '#D35400'
         ],  # Very fair skin
-        'LF': [
-            '#C99676', '#E5C8A6', '#F3D1C6', '#F5B7B1', '#FAD7A1', '#F9E79F'
+        'F': [
+            '#C99676', '#E5C8A6', '#F3D1C6', '#F5B7B1', '#FAD7A1', '#F9E79F',
+            '#F1C40F', '#F39C12', '#D35400'
         ],  # Fair skin
+        'L': [
+            '#D5BDAF', '#C39BD3', '#A3E4D7', '#76D7C4', '#48C9B0', '#1ABC9C',
+            '#3498DB', '#2980B9', '#2472A4'
+        ],  # Light skin
         'LM': [
-            '#D5BDAF', '#C39BD3', '#A3E4D7', '#76D7C4', '#48C9B0', '#1ABC9C'
+            '#805341', '#9D7A54', '#BEA07E', '#D5BDAF', '#C39BD3', '#A3E4D7',
+            '#3498DB', '#2980B9', '#2472A4'
         ],  # Light medium skin
-        'MF': [
-            '#805341', '#9D7A54', '#BEA07E', '#D5BDAF', '#C39BD3', '#A3E4D7'
+        'M': [
+            '#6F503C', '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F',
+            '#E74C3C', '#C0392B', '#A93226'
         ],  # Medium skin
         'MD': [
-            '#6F503C', '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F'
+            '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F', '#F4D03F',
+            '#E74C3C', '#C0392B', '#A93226'
         ],  # Medium dark skin
-        'DF': [
-            '#4B3C2A', '#3B2A1D', '#A569BD', '#F1948A', '#F7DC6F', '#F4D03F'
+        'D': [
+            '#2C3E50', '#34495E', '#2C3E50', '#A569BD', '#F1948A', '#F7DC6F',
+            '#E74C3C', '#C0392B', '#A93226'
         ],  # Dark skin
+        'DP': [
+            '#1A252F', '#2C3E50', '#34495E', '#A569BD', '#F1948A', '#F7DC6F',
+            '#E74C3C', '#C0392B', '#A93226'
+        ],  # Deep skin
+        'VD': [
+            '#17202A', '#1A252F', '#2C3E50', '#A569BD', '#F1948A', '#F7DC6F',
+            '#E74C3C', '#C0392B', '#A93226'
+        ]  # Very Deep skin
     }
     return recommendations.get(skin_tone, [])
 
@@ -109,7 +213,7 @@ def process_image(image_data):
         image_data: Can be a file path, bytes, or numpy array
         
     Returns:
-        cv2 image (numpy array)
+        tuple of (cv2 image, display data)
     """
     try:
         if isinstance(image_data, str):  # File path
@@ -124,8 +228,15 @@ def process_image(image_data):
             
         if image is None:
             raise ValueError("Failed to load image")
+        
+        # Get skin tone analysis
+        skin_tone = detect_skin_tone(image)
+        colors = recommend_colors(skin_tone[1])
+        
+        # Create display data
+        display_data = create_analysis_display(image, skin_tone, colors)
             
-        return image
+        return image, display_data
         
     except Exception as e:
         raise ValueError(f"Error processing image: {str(e)}")
