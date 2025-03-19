@@ -2,7 +2,12 @@ services:
   - type: web
     name: skin-tone-analyzer
     env: python
-    buildCommand: pip install -r requirements.txt && mkdir -p skin_tone_analyzer && mv Python/skin_tone.py skin_tone_analyzer/ && pip install -e .
+    buildCommand: |
+      pip install -r requirements.txt && \
+      mkdir -p skin_tone_analyzer && \
+      mv Python/skin_tone.py skin_tone_analyzer/ && \
+      touch skin_tone_analyzer/__init__.py && \
+      pip install -e.
     startCommand: gunicorn wsgi:app
     envVars:
       - key: PYTHON_VERSION
