@@ -101,8 +101,8 @@ def detect_skin_tone(image):
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         # Convert to RGB color space for additional analysis
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    except cv2.error:
-        raise ValueError("Failed to convert image color spaces. Please ensure the image is in BGR format")
+    except cv2.error as e:
+        raise ValueError(f"Failed to convert image color spaces: {str(e)}. Please ensure the image is in BGR format")
     
     # Calculate average HSV and RGB values
     hsv_avg = np.mean(hsv_image, axis=(0, 1))
@@ -219,16 +219,25 @@ def process_image(image_data):
         if isinstance(image_data, str):  # File path
             image = cv2.imread(image_data)
         elif isinstance(image_data, bytes):  # Bytes data
+            # Convert bytes to numpy array
             nparr = np.frombuffer(image_data, np.uint8)
+            # Decode the numpy array as an image
             image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         elif isinstance(image_data, np.ndarray):  # Already a cv2 image
-            image = image_data
+            image = image_data.copy()  # Make a copy to avoid modifying original
         else:
             raise ValueError("Unsupported image format")
             
         if image is None:
             raise ValueError("Failed to load image")
-        
+            
+        # Ensure image is in BGR format and correct shape
+        if len(image.shape) != 3:
+            raise ValueError("Image must be a color image with 3 channels")
+            
+        if image.shape[2] != 3:
+            raise ValueError("Image must have 3 color channels (BGR)")
+            
         # Get skin tone analysis
         skin_tone = detect_skin_tone(image)
         colors = recommend_colors(skin_tone[1])
