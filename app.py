@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify
 import os
-from skin_tone import process_image
+from skin_tone_analyzer import process_image
 import numpy as np
 
 app = Flask(__name__)
