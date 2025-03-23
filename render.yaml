@@ -4,9 +4,11 @@ services:
     env: python
     buildCommand: |
       set -e && \
+      echo "Starting build process..." && \
       python -m pip install --upgrade pip && \
       pip install -r requirements.txt && \
       echo "Creating package directory..." && \
+      rm -rf skin_tone_analyzer && \
       mkdir -p skin_tone_analyzer && \
       echo "Copying skin_tone.py..." && \
       cp -f Python/skin_tone.py skin_tone_analyzer/ && \
@@ -14,10 +16,12 @@ services:
       touch skin_tone_analyzer/__init__.py && \
       echo "Verifying package structure..." && \
       ls -la skin_tone_analyzer/ && \
+      echo "Verifying file contents..." && \
+      cat skin_tone_analyzer/skin_tone.py && \
       echo "Installing package..." && \
       pip install -e . && \
       echo "Verifying installation..." && \
-      python -c "import skin_tone_analyzer; print('Package imported successfully')" && \
+      python -c "import os; print('Current directory:', os.getcwd()); print('Directory contents:', os.listdir('.')); print('Package directory contents:', os.listdir('skin_tone_analyzer')); import skin_tone_analyzer; print('Package imported successfully')" && \
       echo "Build completed successfully"
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 wsgi:app
     envVars:
