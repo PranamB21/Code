@@ -9,6 +9,7 @@ services:
       mkdir -p skin_tone_analyzer && \
       cp -f Python/skin_tone.py skin_tone_analyzer/ && \
       touch skin_tone_analyzer/__init__.py && \
+      ls -la skin_tone_analyzer/ && \
       pip install -e . && \
       echo "Build completed successfully"
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 wsgi:app

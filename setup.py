@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="skin_tone_analyzer",
     version="1.0.0",
-    packages=find_packages(include=['skin_tone_analyzer', 'skin_tone_analyzer.*']),
+    packages=find_packages(),
     include_package_data=True,
     package_data={
         'skin_tone_analyzer': ['*.py'],
@@ -17,4 +17,5 @@ setup(
         'opencv-python-headless==4.8.0.76',
         'Pillow==9.5.0'
     ],
+    python_requires='>=3.11',
 ) 
