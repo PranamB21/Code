@@ -6,7 +6,7 @@ services:
       python -m pip install --upgrade pip && \
       pip install -r requirements.txt && \
       mkdir -p skin_tone_analyzer && \
-      cp Python/skin_tone.py skin_tone_analyzer/ && \
+      cp -f Python/skin_tone.py skin_tone_analyzer/ && \
       touch skin_tone_analyzer/__init__.py && \
       pip install -e .
     startCommand: gunicorn wsgi:app
@@ -14,7 +14,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.11
       - key: PYTHONPATH
-        value: .
+        value: /opt/render/project/src
       - key: FLASK_ENV
         value: production
       - key: FLASK_APP
