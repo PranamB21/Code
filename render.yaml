@@ -3,13 +3,15 @@ services:
     name: skin-tone-analyzer
     env: python
     buildCommand: |
+      set -e && \
       python -m pip install --upgrade pip && \
       pip install -r requirements.txt && \
       mkdir -p skin_tone_analyzer && \
       cp -f Python/skin_tone.py skin_tone_analyzer/ && \
       touch skin_tone_analyzer/__init__.py && \
-      pip install -e .
-    startCommand: gunicorn wsgi:app
+      pip install -e . && \
+      echo "Build completed successfully"
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 wsgi:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
@@ -19,6 +21,8 @@ services:
         value: production
       - key: FLASK_APP
         value: app.py
+      - key: PYTHONUNBUFFERED
+        value: 1
     autoDeploy: true
     healthCheckPath: /
     plan: free
