@@ -6,11 +6,18 @@ services:
       set -e && \
       python -m pip install --upgrade pip && \
       pip install -r requirements.txt && \
+      echo "Creating package directory..." && \
       mkdir -p skin_tone_analyzer && \
+      echo "Copying skin_tone.py..." && \
       cp -f Python/skin_tone.py skin_tone_analyzer/ && \
+      echo "Creating __init__.py..." && \
       touch skin_tone_analyzer/__init__.py && \
+      echo "Verifying package structure..." && \
       ls -la skin_tone_analyzer/ && \
+      echo "Installing package..." && \
       pip install -e . && \
+      echo "Verifying installation..." && \
+      python -c "import skin_tone_analyzer; print('Package imported successfully')" && \
       echo "Build completed successfully"
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 wsgi:app
     envVars:
