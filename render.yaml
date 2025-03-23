@@ -7,6 +7,14 @@ services:
       python -m pip install --upgrade pip
       echo "Current directory: $(pwd)"
       echo "Directory contents: $(ls -la)"
+      echo "Python directory contents: $(ls -la Python/)"
+      echo "Creating package directory..."
+      mkdir -p skin_tone_analyzer
+      echo "Copying files..."
+      cp -f Python/skin_tone.py skin_tone_analyzer/
+      cp -f skin_tone_analyzer/__init__.py skin_tone_analyzer/
+      echo "Verifying package structure..."
+      ls -la skin_tone_analyzer/
       echo "Installing package..."
       pip install -e .
       echo "Verifying installation..."

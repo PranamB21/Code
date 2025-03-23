@@ -10,19 +10,23 @@ logger = logging.getLogger(__name__)
 package_dir = os.path.dirname(os.path.abspath(__file__))
 logger.info(f"Package directory: {package_dir}")
 
+# Log current working directory and Python path
+logger.info(f"Current working directory: {os.getcwd()}")
+logger.info(f"Python path: {sys.path}")
+
 # Add the package directory to Python path if not already there
 if package_dir not in sys.path:
     sys.path.insert(0, package_dir)
     logger.info(f"Added {package_dir} to Python path")
 
-# Log current Python path
-logger.info(f"Python path: {sys.path}")
-
 # Verify file exists
 skin_tone_path = os.path.join(package_dir, 'skin_tone.py')
+logger.info(f"Looking for skin_tone.py at: {skin_tone_path}")
+
 if not os.path.exists(skin_tone_path):
     logger.error(f"skin_tone.py not found at {skin_tone_path}")
     logger.error(f"Directory contents: {os.listdir(package_dir)}")
+    logger.error(f"Parent directory contents: {os.listdir(os.path.dirname(package_dir))}")
     raise FileNotFoundError(f"skin_tone.py not found at {skin_tone_path}")
 
 try:
