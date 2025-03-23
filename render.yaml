@@ -5,6 +5,8 @@ services:
     buildCommand: |
       echo "Starting build process..."
       python -m pip install --upgrade pip
+      echo "Current directory: $(pwd)"
+      echo "Directory contents: $(ls -la)"
       echo "Creating package directory..."
       mkdir -p skin_tone_analyzer
       echo "Creating __init__.py..."
@@ -13,6 +15,13 @@ services:
       cp -f Python/skin_tone.py skin_tone_analyzer/skin_tone.py
       echo "Verifying package structure..."
       ls -la skin_tone_analyzer/
+      echo "Verifying skin_tone.py exists..."
+      if [ -f skin_tone_analyzer/skin_tone.py ]; then
+        echo "skin_tone.py found successfully"
+      else
+        echo "ERROR: skin_tone.py not found after copying"
+        exit 1
+      fi
       echo "Installing package..."
       pip install -e .
       echo "Verifying installation..."
@@ -24,6 +33,8 @@ services:
         value: 3.11.0
       - key: FLASK_ENV
         value: production
+      - key: PYTHONPATH
+        value: /opt/render/project/src
     autoDeploy: true
     healthCheckPath: /
     plan: free
