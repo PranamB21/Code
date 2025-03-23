@@ -1,8 +1,21 @@
 from setuptools import setup, find_packages
 import os
+import shutil
 
 # Get the absolute path of the package directory
 package_dir = os.path.dirname(os.path.abspath(__file__))
+python_dir = os.path.join(package_dir, 'Python')
+skin_tone_analyzer_dir = os.path.join(package_dir, 'skin_tone_analyzer')
+
+# Ensure skin_tone_analyzer directory exists
+os.makedirs(skin_tone_analyzer_dir, exist_ok=True)
+
+# Copy skin_tone.py if it doesn't exist in skin_tone_analyzer
+source_file = os.path.join(python_dir, 'skin_tone.py')
+target_file = os.path.join(skin_tone_analyzer_dir, 'skin_tone.py')
+if os.path.exists(source_file) and not os.path.exists(target_file):
+    shutil.copy2(source_file, target_file)
+    print(f"Copied {source_file} to {target_file}")
 
 setup(
     name="skin_tone_analyzer",

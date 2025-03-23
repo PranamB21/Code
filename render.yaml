@@ -7,21 +7,6 @@ services:
       python -m pip install --upgrade pip
       echo "Current directory: $(pwd)"
       echo "Directory contents: $(ls -la)"
-      echo "Creating package directory..."
-      mkdir -p skin_tone_analyzer
-      echo "Creating __init__.py..."
-      cp -f skin_tone_analyzer/__init__.py skin_tone_analyzer/__init__.py
-      echo "Copying skin_tone.py..."
-      cp -f Python/skin_tone.py skin_tone_analyzer/skin_tone.py
-      echo "Verifying package structure..."
-      ls -la skin_tone_analyzer/
-      echo "Verifying skin_tone.py exists..."
-      if [ -f skin_tone_analyzer/skin_tone.py ]; then
-        echo "skin_tone.py found successfully"
-      else
-        echo "ERROR: skin_tone.py not found after copying"
-        exit 1
-      fi
       echo "Installing package..."
       pip install -e .
       echo "Verifying installation..."
