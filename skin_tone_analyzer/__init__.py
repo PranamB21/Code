@@ -18,6 +18,13 @@ if package_dir not in sys.path:
 # Log current Python path
 logger.info(f"Python path: {sys.path}")
 
+# Verify file exists
+skin_tone_path = os.path.join(package_dir, 'skin_tone.py')
+if not os.path.exists(skin_tone_path):
+    logger.error(f"skin_tone.py not found at {skin_tone_path}")
+    logger.error(f"Directory contents: {os.listdir(package_dir)}")
+    raise FileNotFoundError(f"skin_tone.py not found at {skin_tone_path}")
+
 try:
     # Try to import the module
     from .skin_tone import process_image, detect_skin_tone, recommend_colors, create_color_preview

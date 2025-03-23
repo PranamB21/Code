@@ -11,9 +11,9 @@ services:
       rm -rf skin_tone_analyzer && \
       mkdir -p skin_tone_analyzer && \
       echo "Copying skin_tone.py..." && \
-      cp -f Python/skin_tone.py skin_tone_analyzer/ && \
+      cp -f Python/skin_tone.py skin_tone_analyzer/skin_tone.py && \
       echo "Creating __init__.py..." && \
-      touch skin_tone_analyzer/__init__.py && \
+      cp -f skin_tone_analyzer/__init__.py skin_tone_analyzer/__init__.py && \
       echo "Verifying package structure..." && \
       ls -la skin_tone_analyzer/ && \
       echo "Verifying file contents..." && \

@@ -1,9 +1,13 @@
 from setuptools import setup, find_packages
+import os
+
+# Get the absolute path of the package directory
+package_dir = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name="skin_tone_analyzer",
     version="1.0.0",
-    packages=find_packages(include=['skin_tone_analyzer', 'skin_tone_analyzer.*']),
+    packages=find_packages(),
     include_package_data=True,
     package_data={
         'skin_tone_analyzer': ['*.py'],
@@ -19,4 +23,5 @@ setup(
     ],
     python_requires='>=3.11',
     zip_safe=False,
+    package_dir={'': '.'},
 ) 
