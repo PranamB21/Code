@@ -3,38 +3,27 @@ services:
     name: skin-tone-analyzer
     env: python
     buildCommand: |
-      set -e && \
-      echo "Starting build process..." && \
-      python -m pip install --upgrade pip && \
-      pip install -r requirements.txt && \
-      echo "Creating package directory..." && \
-      rm -rf skin_tone_analyzer && \
-      mkdir -p skin_tone_analyzer && \
-      echo "Copying skin_tone.py..." && \
-      cp -f Python/skin_tone.py skin_tone_analyzer/skin_tone.py && \
-      echo "Creating __init__.py..." && \
-      cp -f skin_tone_analyzer/__init__.py skin_tone_analyzer/__init__.py && \
-      echo "Verifying package structure..." && \
-      ls -la skin_tone_analyzer/ && \
-      echo "Verifying file contents..." && \
-      cat skin_tone_analyzer/skin_tone.py && \
-      echo "Installing package..." && \
-      pip install -e . && \
-      echo "Verifying installation..." && \
-      python -c "import os; print('Current directory:', os.getcwd()); print('Directory contents:', os.listdir('.')); print('Package directory contents:', os.listdir('skin_tone_analyzer')); import skin_tone_analyzer; print('Package imported successfully')" && \
+      echo "Starting build process..."
+      python -m pip install --upgrade pip
+      echo "Creating package directory..."
+      mkdir -p skin_tone_analyzer
+      echo "Creating __init__.py..."
+      cp -f skin_tone_analyzer/__init__.py skin_tone_analyzer/__init__.py
+      echo "Copying skin_tone.py..."
+      cp -f Python/skin_tone.py skin_tone_analyzer/skin_tone.py
+      echo "Verifying package structure..."
+      ls -la skin_tone_analyzer/
+      echo "Installing package..."
+      pip install -e .
+      echo "Verifying installation..."
+      python -c "import skin_tone_analyzer.skin_tone; print('Import successful')"
       echo "Build completed successfully"
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 wsgi:app
+    startCommand: gunicorn wsgi:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.11
-      - key: PYTHONPATH
-        value: /opt/render/project/src
+        value: 3.11.0
       - key: FLASK_ENV
         value: production
-      - key: FLASK_APP
-        value: app.py
-      - key: PYTHONUNBUFFERED
-        value: 1
     autoDeploy: true
     healthCheckPath: /
     plan: free
