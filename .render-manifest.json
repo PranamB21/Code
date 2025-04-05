@@ -1,0 +1,5 @@
+{
+  "build": {
+    "command": "./render.yaml services[0].buildCommand"
+  }
+} 

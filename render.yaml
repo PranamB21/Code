@@ -8,15 +8,28 @@ services:
       python -m pip install --upgrade pip
       
       echo "Current directory: $(pwd)"
-      echo "Directory contents:"
+      echo "Directory contents before setup:"
       ls -la
       
       echo "Setting up package structure..."
       rm -rf skin_tone_analyzer/__pycache__
       mkdir -p skin_tone_analyzer
       
+      echo "Checking Python directory..."
+      if [ ! -d "Python" ]; then
+        echo "Python directory not found. Contents of current directory:"
+        ls -la
+        exit 1
+      fi
+      
       echo "Copying skin_tone.py..."
-      cp -f Python/skin_tone.py skin_tone_analyzer/skin_tone.py
+      if [ ! -f "Python/skin_tone.py" ]; then
+        echo "skin_tone.py not found in Python directory. Contents of Python directory:"
+        ls -la Python/
+        exit 1
+      fi
+      
+      cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
       chmod 644 skin_tone_analyzer/skin_tone.py
       
       echo "Creating __init__.py..."
@@ -47,6 +60,7 @@ EOL
       pip install -r requirements.txt
       
       echo "Verifying package structure..."
+      echo "Contents of skin_tone_analyzer directory:"
       ls -la skin_tone_analyzer/
       
       echo "Installing package..."
@@ -71,6 +85,16 @@ EOL
         value: /opt/render/project/src
       - key: GUNICORN_CMD_ARGS
         value: "--log-level=info"
+    buildFilter:
+      paths:
+      - Python/**
+      - skin_tone_analyzer/**
+      - requirements.txt
+      - setup.py
+      - wsgi.py
+      - app.py
+      - templates/**
+      - render.yaml
     autoDeploy: true
     healthCheckPath: /
     plan: free
