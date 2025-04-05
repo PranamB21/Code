@@ -3,7 +3,7 @@ services:
     name: skin-tone-analyzer
     env: python
     buildCommand: |
-      set -e
+      set -ex
       echo "Starting build process..."
       python -m pip install --upgrade pip
       
@@ -17,19 +17,31 @@ services:
       
       echo "Checking Python directory..."
       if [ ! -d "Python" ]; then
-        echo "Python directory not found. Contents of current directory:"
+        echo "ERROR: Python directory not found. Contents of current directory:"
         ls -la
         exit 1
       fi
       
+      echo "Contents of Python directory:"
+      ls -la Python/
+      
       echo "Copying skin_tone.py..."
       if [ ! -f "Python/skin_tone.py" ]; then
-        echo "skin_tone.py not found in Python directory. Contents of Python directory:"
-        ls -la Python/
+        echo "ERROR: skin_tone.py not found in Python directory"
         exit 1
       fi
       
+      # Copy with verbose output and verify
       cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
+      if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
+        echo "ERROR: Failed to copy skin_tone.py"
+        exit 1
+      fi
+      
+      echo "Verifying skin_tone.py contents:"
+      head -n 5 skin_tone_analyzer/skin_tone.py
+      
+      echo "Setting file permissions..."
       chmod 644 skin_tone_analyzer/skin_tone.py
       
       echo "Creating __init__.py..."
@@ -71,7 +83,14 @@ EOL
       chmod 755 uploads
       
       echo "Verifying imports..."
-      PYTHONPATH=/opt/render/project/src python -c "from skin_tone_analyzer import process_image; print('Import successful')"
+      PYTHONPATH=/opt/render/project/src python -c "
+import os
+print('Current directory:', os.getcwd())
+print('Directory contents:', os.listdir())
+print('skin_tone_analyzer contents:', os.listdir('skin_tone_analyzer'))
+from skin_tone_analyzer import process_image
+print('Import successful')
+"
       
       echo "Build completed successfully"
     startCommand: |

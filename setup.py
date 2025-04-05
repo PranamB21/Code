@@ -1,4 +1,13 @@
 from setuptools import setup, find_packages
+import os
+
+# Get package directory
+package_dir = os.path.abspath(os.path.dirname(__file__))
+
+# Verify skin_tone.py exists
+skin_tone_path = os.path.join(package_dir, 'skin_tone_analyzer', 'skin_tone.py')
+if not os.path.exists(skin_tone_path):
+    raise FileNotFoundError(f"skin_tone.py not found at {skin_tone_path}")
 
 setup(
     name="skin_tone_analyzer",
@@ -8,6 +17,9 @@ setup(
     package_data={
         'skin_tone_analyzer': ['*.py'],
     },
+    data_files=[
+        ('skin_tone_analyzer', ['skin_tone_analyzer/skin_tone.py']),
+    ],
     install_requires=[
         'flask==2.0.1',
         'Werkzeug==2.0.3',
