@@ -1,0 +1,3 @@
+include Python/skin_tone.py
+recursive-include skin_tone_analyzer *.py
+include requirements.txt 

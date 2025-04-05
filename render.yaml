@@ -11,69 +11,22 @@ services:
       echo "Directory contents:"
       ls -la
       
-      echo "Checking Python directory..."
-      if [ ! -d "Python" ]; then
-        echo "ERROR: Python directory not found"
-        exit 1
-      fi
-      
-      echo "Python directory contents:"
-      ls -la Python/
-      
-      echo "Checking source file..."
-      if [ ! -f "Python/skin_tone.py" ]; then
-        echo "ERROR: Python/skin_tone.py not found"
-        exit 1
-      fi
-      
-      echo "Creating fresh package directory..."
-      rm -rf skin_tone_analyzer
-      mkdir -p skin_tone_analyzer
-      
-      echo "Copying files..."
-      cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
-      if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
-        echo "ERROR: Failed to copy skin_tone.py"
-        exit 1
-      fi
-      
-      echo "Creating __init__.py..."
-      cat > skin_tone_analyzer/__init__.py << 'EOL'
-import os
-import sys
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Get the absolute path of the package directory
-package_dir = os.path.dirname(os.path.abspath(__file__))
-logger.info(f"Package directory: {package_dir}")
-
-try:
-    from .skin_tone import process_image, detect_skin_tone, recommend_colors, create_color_preview
-    logger.info("Successfully imported skin_tone module")
-except ImportError as e:
-    logger.error(f"Error importing from skin_tone: {e}")
-    logger.error(f"Current directory: {os.getcwd()}")
-    logger.error(f"Package directory: {package_dir}")
-    logger.error(f"Directory contents: {os.listdir(package_dir)}")
-    raise
-
-__all__ = ['process_image', 'detect_skin_tone', 'recommend_colors', 'create_color_preview']
-EOL
-      
-      echo "Verifying package structure..."
-      ls -la skin_tone_analyzer/
-      
       echo "Installing dependencies..."
       pip install -r requirements.txt
       
       echo "Installing package..."
       pip install -e .
       
-      echo "Verifying installation..."
+      echo "Verifying package structure..."
+      ls -la skin_tone_analyzer/
+      
+      echo "Verifying skin_tone.py exists..."
+      if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
+        echo "ERROR: skin_tone.py not found in package directory"
+        exit 1
+      fi
+      
+      echo "Verifying imports..."
       python -c "from skin_tone_analyzer import process_image; print('Import successful')"
       
       echo "Build completed successfully"
