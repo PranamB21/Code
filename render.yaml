@@ -8,43 +8,24 @@ services:
       python -m pip install --upgrade pip
       
       echo "Current directory: $(pwd)"
-      echo "Directory contents before setup:"
+      pwd
+      
+      echo "Initial directory contents:"
       ls -la
       
-      echo "Setting up package structure..."
-      rm -rf skin_tone_analyzer/__pycache__
+      echo "Setting up fresh package structure..."
+      rm -rf skin_tone_analyzer
       mkdir -p skin_tone_analyzer
-      
-      echo "Checking Python directory..."
-      if [ ! -d "Python" ]; then
-        echo "ERROR: Python directory not found. Contents of current directory:"
-        ls -la
-        exit 1
-      fi
-      
-      echo "Contents of Python directory:"
-      ls -la Python/
       
       echo "Copying skin_tone.py..."
       if [ ! -f "Python/skin_tone.py" ]; then
-        echo "ERROR: skin_tone.py not found in Python directory"
+        echo "ERROR: skin_tone.py not found in Python directory. Contents:"
+        ls -la Python/
         exit 1
       fi
       
-      # Copy with verbose output and verify
-      cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
-      if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
-        echo "ERROR: Failed to copy skin_tone.py"
-        exit 1
-      fi
-      
-      echo "Verifying skin_tone.py contents:"
-      head -n 5 skin_tone_analyzer/skin_tone.py
-      
-      echo "Setting file permissions..."
-      chmod 644 skin_tone_analyzer/skin_tone.py
-      
-      echo "Creating __init__.py..."
+      echo "Creating package files..."
+      # Create __init__.py first
       cat > skin_tone_analyzer/__init__.py << 'EOL'
 import os
 import sys
@@ -54,37 +35,53 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Get the absolute path of the package directory
+package_dir = os.path.dirname(os.path.abspath(__file__))
+logger.info(f"Package directory: {package_dir}")
+
+# Add package directory to Python path
+if package_dir not in sys.path:
+    sys.path.insert(0, package_dir)
+    logger.info(f"Added {package_dir} to Python path")
+
 try:
     from .skin_tone import process_image, detect_skin_tone, recommend_colors, create_color_preview
     logger.info("Successfully imported skin_tone module")
 except ImportError as e:
     logger.error(f"Error importing from skin_tone: {e}")
     logger.error(f"Current directory: {os.getcwd()}")
-    logger.error(f"Package directory: {os.path.dirname(os.path.abspath(__file__))}")
-    logger.error(f"Directory contents: {os.listdir(os.path.dirname(os.path.abspath(__file__)))}")
+    logger.error(f"Package directory: {package_dir}")
+    logger.error(f"Directory contents: {os.listdir(package_dir)}")
     raise
 
 __all__ = ['process_image', 'detect_skin_tone', 'recommend_colors', 'create_color_preview']
 EOL
+      
+      # Copy skin_tone.py
+      cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
+      
+      echo "Setting file permissions..."
       chmod 644 skin_tone_analyzer/__init__.py
+      chmod 644 skin_tone_analyzer/skin_tone.py
+      
+      echo "Package contents after setup:"
+      ls -la skin_tone_analyzer/
       
       echo "Installing dependencies..."
       pip install -r requirements.txt
       
-      echo "Verifying package structure..."
-      echo "Contents of skin_tone_analyzer directory:"
-      ls -la skin_tone_analyzer/
-      
-      echo "Installing package..."
+      echo "Installing package in development mode..."
       pip install -e .
       
       echo "Creating uploads directory..."
       mkdir -p uploads
       chmod 755 uploads
       
-      echo "Verifying imports..."
+      echo "Verifying installation..."
       PYTHONPATH=/opt/render/project/src python -c "
 import os
+import sys
+print('Python path:', sys.path)
 print('Current directory:', os.getcwd())
 print('Directory contents:', os.listdir())
 print('skin_tone_analyzer contents:', os.listdir('skin_tone_analyzer'))
@@ -94,7 +91,7 @@ print('Import successful')
       
       echo "Build completed successfully"
     startCommand: |
-      gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 --access-logfile - --error-logfile - wsgi:app
+      PYTHONPATH=/opt/render/project/src gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 --access-logfile - --error-logfile - wsgi:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
