@@ -17,15 +17,30 @@ services:
       rm -rf skin_tone_analyzer
       mkdir -p skin_tone_analyzer
       
-      echo "Copying skin_tone.py..."
+      echo "Verifying Python directory and skin_tone.py..."
+      if [ ! -d "Python" ]; then
+        echo "ERROR: Python directory not found"
+        ls -la
+        exit 1
+      fi
+      
       if [ ! -f "Python/skin_tone.py" ]; then
-        echo "ERROR: skin_tone.py not found in Python directory. Contents:"
+        echo "ERROR: skin_tone.py not found in Python directory"
         ls -la Python/
         exit 1
       fi
       
-      echo "Creating package files..."
-      # Create __init__.py first
+      echo "Copying skin_tone.py with verbose output..."
+      cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
+      
+      echo "Verifying skin_tone.py was copied..."
+      if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
+        echo "ERROR: Failed to copy skin_tone.py"
+        ls -la skin_tone_analyzer/
+        exit 1
+      fi
+      
+      echo "Creating __init__.py..."
       cat > skin_tone_analyzer/__init__.py << 'EOL'
 import os
 import sys
@@ -56,9 +71,6 @@ except ImportError as e:
 
 __all__ = ['process_image', 'detect_skin_tone', 'recommend_colors', 'create_color_preview']
 EOL
-      
-      # Copy skin_tone.py
-      cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
       
       echo "Setting file permissions..."
       chmod 644 skin_tone_analyzer/__init__.py
