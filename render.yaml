@@ -2,49 +2,35 @@ services:
   - type: web
     name: skin-tone-analyzer
     env: python
-    buildCommand: |
+    buildCommand: |-
       set -ex
-      echo "Starting build process..."
       python -m pip install --upgrade pip
       
-      echo "Current directory: $(pwd)"
-      pwd
-      
-      echo "Initial directory contents:"
-      ls -la
-      
-      echo "Verifying Python directory..."
+      # Verify Python directory and skin_tone.py
       if [ ! -d "Python" ]; then
         echo "ERROR: Python directory not found"
         ls -la
         exit 1
       fi
       
-      echo "Contents of Python directory:"
-      ls -la Python/
-      
-      echo "Verifying skin_tone.py exists..."
       if [ ! -f "Python/skin_tone.py" ]; then
-        echo "ERROR: skin_tone.py not found in Python directory"
+        echo "ERROR: skin_tone.py not found"
+        ls -la Python/
         exit 1
       fi
       
-      echo "Setting up fresh package structure..."
+      # Set up package structure
       rm -rf skin_tone_analyzer
       mkdir -p skin_tone_analyzer
-      
-      echo "Copying skin_tone.py..."
       cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
       
-      echo "Verifying copy operation..."
       if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
         echo "ERROR: Failed to copy skin_tone.py"
-        echo "Contents of skin_tone_analyzer directory:"
         ls -la skin_tone_analyzer/
         exit 1
       fi
       
-      echo "Creating __init__.py..."
+      # Create __init__.py
       cat > skin_tone_analyzer/__init__.py << 'EOL'
 import os
 import sys
@@ -63,13 +49,6 @@ if package_dir not in sys.path:
     sys.path.insert(0, package_dir)
     logger.info(f"Added {package_dir} to Python path")
 
-# Verify skin_tone.py exists
-skin_tone_path = os.path.join(package_dir, 'skin_tone.py')
-if not os.path.exists(skin_tone_path):
-    logger.error(f"skin_tone.py not found at {skin_tone_path}")
-    logger.error(f"Directory contents: {os.listdir(package_dir)}")
-    raise FileNotFoundError(f"skin_tone.py not found at {skin_tone_path}")
-
 try:
     from .skin_tone import process_image, detect_skin_tone, recommend_colors, create_color_preview
     logger.info("Successfully imported skin_tone module")
@@ -83,24 +62,19 @@ except ImportError as e:
 __all__ = ['process_image', 'detect_skin_tone', 'recommend_colors', 'create_color_preview']
 EOL
       
-      echo "Setting file permissions..."
+      # Set permissions
       chmod 644 skin_tone_analyzer/__init__.py
       chmod 644 skin_tone_analyzer/skin_tone.py
       
-      echo "Package contents after setup:"
-      ls -la skin_tone_analyzer/
-      
-      echo "Installing dependencies..."
+      # Install dependencies
       pip install -r requirements.txt
-      
-      echo "Installing package in development mode..."
       pip install -e .
       
-      echo "Creating uploads directory..."
+      # Create uploads directory
       mkdir -p uploads
       chmod 755 uploads
       
-      echo "Verifying installation..."
+      # Verify installation
       PYTHONPATH=/opt/render/project/src python -c "
 import os
 import sys
@@ -111,10 +85,7 @@ print('skin_tone_analyzer contents:', os.listdir('skin_tone_analyzer'))
 from skin_tone_analyzer import process_image
 print('Import successful')
 "
-      
-      echo "Build completed successfully"
-    startCommand: |
-      PYTHONPATH=/opt/render/project/src gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 --access-logfile - --error-logfile - wsgi:app
+    startCommand: PYTHONPATH=/opt/render/project/src gunicorn --bind 0.0.0.0:$PORT wsgi:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -122,8 +93,6 @@ print('Import successful')
         value: production
       - key: PYTHONPATH
         value: /opt/render/project/src
-      - key: GUNICORN_CMD_ARGS
-        value: "--log-level=info"
     buildFilter:
       paths:
       - Python/**
