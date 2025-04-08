@@ -6,29 +6,9 @@ services:
       set -ex
       python -m pip install --upgrade pip
       
-      # Verify Python directory and skin_tone.py
-      if [ ! -d "Python" ]; then
-        echo "ERROR: Python directory not found"
-        ls -la
-        exit 1
-      fi
-      
-      if [ ! -f "Python/skin_tone.py" ]; then
-        echo "ERROR: skin_tone.py not found"
-        ls -la Python/
-        exit 1
-      fi
-      
       # Set up package structure
-      rm -rf skin_tone_analyzer
       mkdir -p skin_tone_analyzer
-      cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
-      
-      if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
-        echo "ERROR: Failed to copy skin_tone.py"
-        ls -la skin_tone_analyzer/
-        exit 1
-      fi
+      cp Python/skin_tone.py skin_tone_analyzer/
       
       # Create __init__.py
       cat > skin_tone_analyzer/__init__.py << 'EOL'
@@ -62,44 +42,20 @@ except ImportError as e:
 __all__ = ['process_image', 'detect_skin_tone', 'recommend_colors', 'create_color_preview']
 EOL
       
-      # Set permissions
-      chmod 644 skin_tone_analyzer/__init__.py
-      chmod 644 skin_tone_analyzer/skin_tone.py
-      
       # Install dependencies
       pip install -r requirements.txt
       
-      # Explicitly install gunicorn and verify
-      pip install gunicorn==20.1.0
-      python -c "import gunicorn; print('Gunicorn version:', gunicorn.__version__)"
-      
-      # Verify gunicorn installation in virtual environment
-      .venv/bin/pip install gunicorn==20.1.0
-      .venv/bin/python -c "import gunicorn; print('Virtual env gunicorn version:', gunicorn.__version__)"
-      
       # Create uploads directory
       mkdir -p uploads
-      chmod 755 uploads
       
       # Verify installation
-      PYTHONPATH=/opt/render/project/src python -c "
-import os
-import sys
-print('Python path:', sys.path)
-print('Current directory:', os.getcwd())
-print('Directory contents:', os.listdir())
-print('skin_tone_analyzer contents:', os.listdir('skin_tone_analyzer'))
-from skin_tone_analyzer import process_image
-print('Import successful')
-"
-    startCommand: PYTHONPATH=/opt/render/project/src .venv/bin/python -m gunicorn --bind 0.0.0.0:$PORT wsgi:app
+      python -c "import skin_tone_analyzer; print('Import successful')"
+    startCommand: python -m gunicorn --bind 0.0.0.0:$PORT wsgi:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: FLASK_ENV
         value: production
-      - key: PYTHONPATH
-        value: /opt/render/project/src
     buildFilter:
       paths:
       - Python/**
