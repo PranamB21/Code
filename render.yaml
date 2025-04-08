@@ -68,10 +68,14 @@ EOL
       
       # Install dependencies
       pip install -r requirements.txt
-      pip install gunicorn==20.1.0
       
-      # Verify gunicorn installation
+      # Explicitly install gunicorn and verify
+      pip install gunicorn==20.1.0
       python -c "import gunicorn; print('Gunicorn version:', gunicorn.__version__)"
+      
+      # Verify gunicorn installation in virtual environment
+      .venv/bin/pip install gunicorn==20.1.0
+      .venv/bin/python -c "import gunicorn; print('Virtual env gunicorn version:', gunicorn.__version__)"
       
       # Create uploads directory
       mkdir -p uploads
@@ -88,7 +92,7 @@ print('skin_tone_analyzer contents:', os.listdir('skin_tone_analyzer'))
 from skin_tone_analyzer import process_image
 print('Import successful')
 "
-    startCommand: PYTHONPATH=/opt/render/project/src python -m gunicorn --bind 0.0.0.0:$PORT wsgi:app
+    startCommand: PYTHONPATH=/opt/render/project/src .venv/bin/python -m gunicorn --bind 0.0.0.0:$PORT wsgi:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
