@@ -13,29 +13,33 @@ services:
       echo "Initial directory contents:"
       ls -la
       
-      echo "Setting up fresh package structure..."
-      rm -rf skin_tone_analyzer
-      mkdir -p skin_tone_analyzer
-      
-      echo "Verifying Python directory and skin_tone.py..."
+      echo "Verifying Python directory..."
       if [ ! -d "Python" ]; then
         echo "ERROR: Python directory not found"
         ls -la
         exit 1
       fi
       
+      echo "Contents of Python directory:"
+      ls -la Python/
+      
+      echo "Verifying skin_tone.py exists..."
       if [ ! -f "Python/skin_tone.py" ]; then
         echo "ERROR: skin_tone.py not found in Python directory"
-        ls -la Python/
         exit 1
       fi
       
-      echo "Copying skin_tone.py with verbose output..."
+      echo "Setting up fresh package structure..."
+      rm -rf skin_tone_analyzer
+      mkdir -p skin_tone_analyzer
+      
+      echo "Copying skin_tone.py..."
       cp -v Python/skin_tone.py skin_tone_analyzer/skin_tone.py
       
-      echo "Verifying skin_tone.py was copied..."
+      echo "Verifying copy operation..."
       if [ ! -f "skin_tone_analyzer/skin_tone.py" ]; then
         echo "ERROR: Failed to copy skin_tone.py"
+        echo "Contents of skin_tone_analyzer directory:"
         ls -la skin_tone_analyzer/
         exit 1
       fi
@@ -58,6 +62,13 @@ logger.info(f"Package directory: {package_dir}")
 if package_dir not in sys.path:
     sys.path.insert(0, package_dir)
     logger.info(f"Added {package_dir} to Python path")
+
+# Verify skin_tone.py exists
+skin_tone_path = os.path.join(package_dir, 'skin_tone.py')
+if not os.path.exists(skin_tone_path):
+    logger.error(f"skin_tone.py not found at {skin_tone_path}")
+    logger.error(f"Directory contents: {os.listdir(package_dir)}")
+    raise FileNotFoundError(f"skin_tone.py not found at {skin_tone_path}")
 
 try:
     from .skin_tone import process_image, detect_skin_tone, recommend_colors, create_color_preview
