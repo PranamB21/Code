@@ -6,7 +6,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        'skin_tone_analyzer': ['*.py'],
+        'skin_tone_analyzer': ['*.py', 'models/*.pth'],
     },
     install_requires=[
         'flask==2.0.1',
@@ -15,8 +15,11 @@ setup(
         'matplotlib==3.7.1',
         'numpy==1.24.3',
         'opencv-python-headless==4.8.0.76',
-        'Pillow==9.5.0'
+        'Pillow==9.5.0',
+        'torch>=2.0.0',
+        'torchvision>=0.15.0',
+        'requests>=2.31.0'
     ],
     python_requires='>=3.11',
     zip_safe=False,
-) 
+)

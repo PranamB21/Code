@@ -80,6 +80,18 @@ def create_analysis_display(image, skin_tone, colors):
     buf.seek(0)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
+import os
+from skin_tone_classifier import load_model, predict_skin_tone
+
+# Load the pre-trained model
+model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'skin_tone_classifier.pth')
+model = None
+
+def load_classifier_model():
+    global model
+    if model is None and os.path.exists(model_path):
+        model = load_model(model_path)
+
 def detect_skin_tone(image):
     # Input validation
     if image is None:
@@ -97,21 +109,21 @@ def detect_skin_tone(image):
         raise ValueError("Image must be a color image with 3 channels")
     
     try:
-        # Convert to HSV color space
+        # Try to use the ML model if available
+        load_classifier_model()
+        if model is not None:
+            return predict_skin_tone(image, model)
+            
+        # Fallback to traditional method if model is not available
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        # Convert to RGB color space for additional analysis
         rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     except cv2.error as e:
         raise ValueError(f"Failed to convert image color spaces: {str(e)}. Please ensure the image is in BGR format")
     
     # Calculate average HSV and RGB values
     hsv_avg = np.mean(hsv_image, axis=(0, 1))
-    rgb_avg = np.mean(rgb_image, axis=(0, 1))
-    
-    # Calculate additional metrics
-    saturation = hsv_avg[1]
     value = hsv_avg[2]
-    red_ratio = rgb_avg[0] / (rgb_avg[0] + rgb_avg[1] + rgb_avg[2])
+    saturation = hsv_avg[1]
     
     # Enhanced skin tone classification with more categories
     if saturation < 25 and value > 220:  # Very fair skin
