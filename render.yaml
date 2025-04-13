@@ -8,42 +8,13 @@ services:
       
       # Set up package structure
       mkdir -p skin_tone_analyzer
-      cp Python/skin_tone.py skin_tone_analyzer/
-      
-      # Create __init__.py
-      cat > skin_tone_analyzer/__init__.py << 'EOL'
-import os
-import sys
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Get the absolute path of the package directory
-package_dir = os.path.dirname(os.path.abspath(__file__))
-logger.info(f"Package directory: {package_dir}")
-
-# Add package directory to Python path
-if package_dir not in sys.path:
-    sys.path.insert(0, package_dir)
-    logger.info(f"Added {package_dir} to Python path")
-
-try:
-    from .skin_tone import process_image, detect_skin_tone, recommend_colors, create_color_preview
-    logger.info("Successfully imported skin_tone module")
-except ImportError as e:
-    logger.error(f"Error importing from skin_tone: {e}")
-    logger.error(f"Current directory: {os.getcwd()}")
-    logger.error(f"Package directory: {package_dir}")
-    logger.error(f"Directory contents: {os.listdir(package_dir)}")
-    raise
-
-__all__ = ['process_image', 'detect_skin_tone', 'recommend_colors', 'create_color_preview']
-EOL
+      cp Python/skin_tone.py skin_tone_analyzer/skin_tone.py
       
       # Install dependencies
       pip install -r requirements.txt
+      
+      # Install the package
+      python setup.py install
       
       # Create uploads directory
       mkdir -p uploads
@@ -53,7 +24,7 @@ EOL
     startCommand: python -m gunicorn --bind 0.0.0.0:$PORT wsgi:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11.11
       - key: FLASK_ENV
         value: production
     buildFilter:
