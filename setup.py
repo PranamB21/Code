@@ -9,8 +9,8 @@ setup(
         'skin_tone_analyzer': ['*.py', 'models/*.pth'],
     },
     install_requires=[
-        'flask==2.0.1',
-        'Werkzeug==2.0.3',
+        'flask==2.3.3',
+        'Werkzeug==2.3.7',
         'gunicorn==20.1.0',
         'matplotlib==3.7.1',
         'numpy==1.24.3',
