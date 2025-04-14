@@ -216,36 +216,74 @@ def process_image(image_data):
         tuple of (cv2 image, display data)
     """
     try:
+        # Input validation
+        if image_data is None:
+            raise ValueError("No image data provided")
+
+        # Process different input types
         if isinstance(image_data, str):  # File path
+            if not os.path.exists(image_data):
+                raise ValueError("Image file does not exist")
             image = cv2.imread(image_data)
         elif isinstance(image_data, bytes):  # Bytes data
-            # Convert bytes to numpy array
-            nparr = np.frombuffer(image_data, np.uint8)
-            # Decode the numpy array as an image
-            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if len(image_data) == 0:
+                raise ValueError("Empty image data provided")
+            try:
+                # Convert bytes to numpy array
+                nparr = np.frombuffer(image_data, np.uint8)
+                # Decode the numpy array as an image
+                image = cv2.imdecode(nparr, cv2.IMREAD_UNCHANGED)
+                # Convert grayscale to BGR if needed
+                if len(image.shape) == 2:
+                    image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+                # Convert RGBA to BGR if needed
+                elif image.shape[2] == 4:
+                    image = cv2.cvtColor(image, cv2.COLOR_RGBA2BGR)
+            except Exception as e:
+                raise ValueError(f"Failed to decode image data: {str(e)}")
         elif isinstance(image_data, np.ndarray):  # Already a cv2 image
+            if image_data.size == 0:
+                raise ValueError("Empty numpy array provided")
             image = image_data.copy()  # Make a copy to avoid modifying original
+            # Convert grayscale to BGR if needed
+            if len(image.shape) == 2:
+                image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+            # Convert RGBA to BGR if needed
+            elif image.shape[2] == 4:
+                image = cv2.cvtColor(image, cv2.COLOR_RGBA2BGR)
         else:
-            raise ValueError("Unsupported image format")
+            raise ValueError(f"Unsupported image format: {type(image_data)}")
             
         if image is None:
-            raise ValueError("Failed to load image")
+            raise ValueError("Failed to load image - invalid format or corrupted data")
             
-        # Ensure image is in BGR format and correct shape
+        # Validate image dimensions and format
         if len(image.shape) != 3:
             raise ValueError("Image must be a color image with 3 channels")
             
         if image.shape[2] != 3:
             raise ValueError("Image must have 3 color channels (BGR)")
+
+        # Check for minimum image dimensions
+        if image.shape[0] < 10 or image.shape[1] < 10:
+            raise ValueError("Image dimensions too small for analysis")
             
         # Get skin tone analysis
-        skin_tone = detect_skin_tone(image)
-        colors = recommend_colors(skin_tone[1])
+        try:
+            skin_tone = detect_skin_tone(image)
+            colors = recommend_colors(skin_tone[1])
+        except Exception as e:
+            raise ValueError(f"Failed to analyze skin tone: {str(e)}")
         
         # Create display data
-        display_data = create_analysis_display(image, skin_tone, colors)
+        try:
+            display_data = create_analysis_display(image, skin_tone, colors)
+        except Exception as e:
+            raise ValueError(f"Failed to create analysis display: {str(e)}")
             
         return image, display_data
         
+    except ValueError as e:
+        raise e
     except Exception as e:
-        raise ValueError(f"Error processing image: {str(e)}")
+        raise ValueError(f"Unexpected error processing image: {str(e)}")
