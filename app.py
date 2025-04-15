@@ -1,5 +1,7 @@
 from flask import Flask, request, render_template, jsonify
 import os
+import shutil
+from datetime import datetime, timedelta
 from skin_tone_analyzer import process_image
 
 app = Flask(__name__)
@@ -8,6 +10,15 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+def cleanup_old_files():
+    """Remove files older than 24 hours from the uploads directory"""
+    cutoff = datetime.now() - timedelta(hours=24)
+    for filename in os.listdir(UPLOAD_FOLDER):
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        if os.path.isfile(filepath):
+            if datetime.fromtimestamp(os.path.getctime(filepath)) < cutoff:
+                os.remove(filepath)
 
 @app.route('/')
 def index():
@@ -27,18 +38,32 @@ def analyze():
     if not '.' in file.filename or file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
         return jsonify({'error': 'Invalid file type. Please upload a PNG, JPG, JPEG, or GIF file.'}), 400
     
+    # Validate file size (max 5MB)
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB in bytes
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+    if file_size > MAX_FILE_SIZE:
+        return jsonify({'error': f'File size exceeds maximum limit of 5MB'}), 400
+    
     # Read the image file
-    image_data = file.read()
-    if not image_data:
-        return jsonify({'error': 'Empty image file'}), 400
-    
-    # Process the image
-    _, display_data = process_image(image_data)
-    
-    return jsonify({
-        'success': True,
-        'display_data': display_data
-    })
+    try:
+        image_data = file.read()
+        if not image_data:
+            return jsonify({'error': 'Empty image file'}), 400
+        
+        # Process the image
+        _, display_data = process_image(image_data)
+        
+        # Clean up uploaded file from memory
+        file.close()
+        
+        return jsonify({
+            'success': True,
+            'display_data': display_data
+        })
+    except Exception as e:
+        return jsonify({'error': f'Error processing image: {str(e)}'}), 500
 
 @app.errorhandler(404)
 def not_found_error(error):
@@ -50,4 +75,4 @@ def internal_error(error):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port) 
+    app.run(host='0.0.0.0', port=port)
